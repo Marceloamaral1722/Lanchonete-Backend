@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block titulo %}
+  {% if pedido %}Editar Pedido{% else %}Novo Pedido{% endif %} - Maxismus Lanches
+{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">
+          {% if pedido %}
+            <i class="bi bi-pencil"></i> Editar Pedido #{{ pedido.id }}
+          {% else %}
+            <i class="bi bi-plus-lg"></i> Novo Pedido
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if pedido %}
+          <form method="POST" action="{{ url_for('pedidos.editar_pedido_post', id=pedido.id) }}">
+        {% else %}
+          <form method="POST" action="{{ url_for('pedidos.novo_pedido_post') }}">
+        {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Cliente *</label>
+            <select name="cliente_id" class="form-select" required>
+              <option value="">Selecione o cliente...</option>
+              {# Laco pelos clientes cadastrados #}
+              {% for cliente in clientes %}
+                <option value="{{ cliente.id }}"
+                  {% if pedido and pedido.cliente_id == cliente.id %}selected{% endif %}>
+                  {{ cliente.nome }} — {{ cliente.cpf }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Produto *</label>
+            <select name="produto_id" class="form-select" required id="sel-produto">
+              <option value="">Selecione o produto...</option>
+              {% for produto in produtos %}
+                <option value="{{ produto.id }}"
+                        data-preco="{{ produto.preco }}"
+                  {% if pedido and pedido.produto_id == produto.id %}selected{% endif %}>
+                  {{ produto.nome }} — R$ {{ '%.2f' | format(produto.preco) }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Quantidade *</label>
+            <input type="number" name="quantidade" id="inp-qtd" class="form-control"
+                   min="1" value="{{ pedido.quantidade if pedido else 1 }}" required />
+          </div>
+
+          {# Campo de status apenas ao editar #}
+          {% if pedido %}
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              {% for s in status_opcoes %}
+                <option value="{{ s }}" {% if pedido.status == s %}selected{% endif %}>
+                  {{ s | capitalize }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Observacoes</label>
+            <textarea name="observacoes" class="form-control" rows="2"
+                      placeholder="Ex: sem cebola, bem passado...">{{ pedido.observacoes if pedido else '' }}</textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{{ url_for('pedidos.listar_pedidos') }}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

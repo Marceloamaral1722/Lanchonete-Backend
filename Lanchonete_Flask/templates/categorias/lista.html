@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block titulo %}Categorias - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><i class="bi bi-tags"></i> Categorias</h4>
+  <a href="{{ url_for('categorias.nova_categoria') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Nova Categoria
+  </a>
+</div>
+
+{% if categorias %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Descricao</th>
+            <th>Produtos</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# Laco para listar todas as categorias #}
+          {% for categoria in categorias %}
+          <tr>
+            <td>{{ categoria.id }}</td>
+            <td><strong>{{ categoria.nome }}</strong></td>
+            <td class="text-muted">{{ categoria.descricao or '-' }}</td>
+            <td>{{ categoria.produtos | length }}</td>
+            <td>
+              <a href="{{ url_for('categorias.editar_categoria', id=categoria.id) }}"
+                 class="btn btn-sm btn-outline-primary me-1">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {# Formulario para deletar via POST #}
+              <form method="POST"
+                    action="{{ url_for('categorias.deletar_categoria', id=categoria.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('Deseja excluir esta categoria?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <i class="bi bi-tags"></i>
+    <p class="mt-2">Nenhuma categoria cadastrada.</p>
+    <a href="{{ url_for('categorias.nova_categoria') }}" class="btn btn-primary">Criar primeira categoria</a>
+  </div>
+{% endif %}
+{% endblock %}

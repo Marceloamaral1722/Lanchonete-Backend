@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block titulo %}Cardapio - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Cardapio</h4>
+    <p class="text-muted small mb-0">Escolha seu pedido e bom apetite!</p>
+  </div>
+</div>
+
+{# Filtros por categoria #}
+<div class="d-flex gap-2 mb-4 flex-wrap" id="filtros">
+  <button class="btn btn-primary btn-sm categoria-btn" onclick="filtrar('todos', this)">Todos</button>
+  {% for cat in categorias %}
+  <button class="btn btn-sm categoria-btn btn-outline-secondary" onclick="filtrar('{{ cat.id }}', this)">
+    {{ cat.nome }}
+  </button>
+  {% endfor %}
+</div>
+
+{# Grid de produtos #}
+<div class="row g-3 mb-5" id="grid-produtos">
+  {% for produto in produtos %}
+  <div class="col-6 col-md-4 col-lg-3 card-item" data-categoria="{{ produto.categoria_id }}">
+    <div class="card produto-card h-100">
+
+      <div class="produto-img">
+        {% set nc = produto.categoria.nome | lower %}
+        {% set np = produto.nome | lower %}
+        {% if 'lanche' in nc or 'burguer' in nc %}🍔
+        {% elif 'bebida' in nc or 'suco' in nc or 'refrig' in nc %}🥤
+        {% elif 'por' in nc or 'frita' in nc %}🍟
+        {% elif 'sobremesa' in nc or 'sorvete' in nc %}
+          {% if 'sorvete' in np or 'split' in np or 'gelado' in np %}🍦
+          {% elif 'browni' in np or 'chocolate' in np or 'trufa' in np %}🍫
+          {% elif 'cocada' in np or 'coco' in np %}🥥
+          {% elif 'bolo' in np or 'torta' in np %}🎂
+          {% elif 'pudim' in np or 'mousse' in np %}🍮
+          {% else %}🍰{% endif %}
+        {% elif 'combo' in nc %}🎁
+        {% else %}🍽️{% endif %}
+      </div>
+
+      <div class="card-body d-flex flex-column pb-3">
+        <span class="badge-categoria mb-1">{{ produto.categoria.nome }}</span>
+        <h6 class="mb-1 fw-bold">{{ produto.nome }}</h6>
+        <p class="text-muted small mb-3 flex-grow-1">{{ produto.descricao or '&nbsp;' }}</p>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="produto-preco">R$ {{ '%.2f' | format(produto.preco) }}</span>
+
+          {# Controle de quantidade direto no card #}
+          <div class="card-qty-ctrl" id="ctrl-{{ produto.id }}">
+            <button class="btn btn-sm btn-outline-secondary" type="button"
+                    onclick="alterar({{ produto.id }}, -1)">
+              <i class="bi bi-dash"></i>
+            </button>
+            <input type="number" id="qty-{{ produto.id }}" class="qty-input" value="0" min="0"
+                   oninput="setQtd({{ produto.id }}, this.value)" />
+            <button class="btn btn-sm btn-primary" type="button"
+                    onclick="alterar({{ produto.id }}, +1)">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+{# Barra de carrinho flutuante (aparece quando tem itens) #}
+<div id="barra-carrinho" class="d-none"
+     style="position:fixed;bottom:0;left:0;right:0;z-index:1050;
+            background:#18181B;color:white;padding:1rem 1.5rem;
+            box-shadow:0 -4px 24px rgba(0,0,0,0.25)">
+  <div class="container-fluid px-2 d-flex align-items-center justify-content-between gap-3">
+    <div>
+      <span class="fw-bold fs-5" id="barra-total">R$ 0,00</span>
+      <span class="text-white-50 small ms-2" id="barra-itens">0 itens</span>
+    </div>
+    <button class="btn btn-primary px-4 fw-bold" onclick="abrirResumo()">
+      <i class="bi bi-cart-check"></i> Ver Carrinho
+    </button>
+  </div>
+</div>
+
+
+{# Modal de resumo e finalização #}
+<div class="modal fade" id="modalCarrinho" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:1rem">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-cart3"></i> Seu Carrinho</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body pt-0">
+        <div id="lista-carrinho"></div>
+
+        <hr />
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Observacoes gerais</label>
+          <textarea id="obs-carrinho" class="form-control" rows="2"
+                    placeholder="Ex: sem cebola, bem passado..."></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center p-3 rounded-3"
+             style="background:#FEF2F2">
+          <span class="fw-semibold">Total</span>
+          <span class="produto-preco fs-5" id="modal-total-carrinho">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Continuar comprando</button>
+        <form method="POST" action="{{ url_for('pedidos.finalizar_carrinho') }}" id="form-finalizar">
+          <input type="hidden" name="carrinho" id="input-carrinho" />
+          <input type="hidden" name="observacoes" id="input-obs" />
+          <button type="submit" class="btn btn-primary px-4 fw-bold"
+                  onclick="prepararEnvio()" id="btn-finalizar">
+            <i class="bi bi-check-lg"></i> Fazer Pedido
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // Dados dos produtos vindos do servidor
+  var produtos = {
+    {% for p in produtos %}
+    {{ p.id }}: { nome: "{{ p.nome }}", preco: {{ p.preco }}, cat: "{{ p.categoria.nome }}" },
+    {% endfor %}
+  };
+
+  var carrinho = {}; // { produto_id: quantidade }
+
+  // Pre-popula o carrinho se o cliente clicou em "Repetir Pedido"
+  (function() {
+    var salvo = localStorage.getItem('repetirPedido');
+    if (!salvo) return;
+    try {
+      var itens = JSON.parse(salvo);
+      itens.forEach(function(item) {
+        var id = String(item.id);
+        if (produtos[id]) {
+          carrinho[id] = (carrinho[id] || 0) + item.qtd;
+          var inp = document.getElementById('qty-' + id);
+          if (inp) inp.value = carrinho[id];
+        }
+      });
+    } catch(e) {}
+    localStorage.removeItem('repetirPedido');
+    // Atualiza barra apos o DOM estar pronto
+    document.addEventListener('DOMContentLoaded', atualizarBarra);
+  })();
+
+  function alterar(id, delta) {
+    var input = document.getElementById('qty-' + id);
+    var novaQtd = Math.max(0, (parseInt(input.value) || 0) + delta);
+    input.value = novaQtd;
+    setQtd(id, novaQtd);
+  }
+
+  function setQtd(id, qtd) {
+    qtd = Math.max(0, parseInt(qtd) || 0);
+    document.getElementById('qty-' + id).value = qtd;
+    if (qtd > 0) {
+      carrinho[id] = qtd;
+    } else {
+      delete carrinho[id];
+    }
+    atualizarBarra();
+  }
+
+  function atualizarBarra() {
+    var totalItens = 0, totalValor = 0;
+    Object.keys(carrinho).forEach(function(id) {
+      var qtd = carrinho[id];
+      totalItens += qtd;
+      totalValor += qtd * produtos[id].preco;
+    });
+
+    var barra = document.getElementById('barra-carrinho');
+    if (totalItens > 0) {
+      barra.classList.remove('d-none');
+      document.getElementById('barra-total').textContent = 'R$ ' + totalValor.toFixed(2).replace('.', ',');
+      document.getElementById('barra-itens').textContent = totalItens + (totalItens === 1 ? ' item' : ' itens');
+    } else {
+      barra.classList.add('d-none');
+    }
+  }
+
+  function abrirResumo() {
+    var html = '';
+    var totalValor = 0;
+    Object.keys(carrinho).forEach(function(id) {
+      var qtd   = carrinho[id];
+      var prod  = produtos[id];
+      var subtot = qtd * prod.preco;
+      totalValor += subtot;
+      html += '<div class="d-flex justify-content-between align-items-center py-2 border-bottom">' +
+                '<div>' +
+                  '<div class="fw-semibold">' + prod.nome + '</div>' +
+                  '<div class="text-muted small">' + prod.cat + '</div>' +
+                '</div>' +
+                '<div class="d-flex align-items-center gap-2">' +
+                  '<div class="card-qty-ctrl">' +
+                    '<button class="btn btn-sm btn-outline-secondary" onclick="alterar(' + id + ',-1);abrirResumo()"><i class="bi bi-dash"></i></button>' +
+                    '<span class="qty-input d-flex align-items-center justify-content-center" style="width:36px;font-weight:700">' + qtd + '</span>' +
+                    '<button class="btn btn-sm btn-primary" onclick="alterar(' + id + ',+1);abrirResumo()"><i class="bi bi-plus"></i></button>' +
+                  '</div>' +
+                  '<span class="fw-bold" style="min-width:70px;text-align:right;color:#EF4444">R$ ' + subtot.toFixed(2).replace('.', ',') + '</span>' +
+                '</div>' +
+              '</div>';
+    });
+
+    document.getElementById('lista-carrinho').innerHTML = html || '<p class="text-muted text-center py-3">Carrinho vazio</p>';
+    document.getElementById('modal-total-carrinho').textContent = 'R$ ' + totalValor.toFixed(2).replace('.', ',');
+
+    new bootstrap.Modal(document.getElementById('modalCarrinho')).show();
+  }
+
+  function prepararEnvio() {
+    var itens = Object.keys(carrinho).map(function(id) {
+      return { produto_id: id, quantidade: carrinho[id] };
+    });
+    document.getElementById('input-carrinho').value = JSON.stringify(itens);
+    document.getElementById('input-obs').value = document.getElementById('obs-carrinho').value;
+  }
+
+  function filtrar(categoriaId, btn) {
+    document.querySelectorAll('.categoria-btn').forEach(function(b) {
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-outline-secondary');
+    });
+    btn.classList.remove('btn-outline-secondary');
+    btn.classList.add('btn-primary');
+    document.querySelectorAll('.card-item').forEach(function(el) {
+      el.style.display = (categoriaId === 'todos' || el.dataset.categoria == categoriaId) ? '' : 'none';
+    });
+  }
+</script>
+
+{% endblock %}

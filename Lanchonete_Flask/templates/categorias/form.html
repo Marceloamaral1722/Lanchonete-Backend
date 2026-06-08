@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block titulo %}
+  {% if categoria %}Editar Categoria{% else %}Nova Categoria{% endif %} - Maxismus Lanches
+{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">
+          {# Titulo dinamico conforme operacao #}
+          {% if categoria %}
+            <i class="bi bi-pencil"></i> Editar Categoria
+          {% else %}
+            <i class="bi bi-plus-lg"></i> Nova Categoria
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        {# Acao do form muda conforme criar ou editar #}
+        {% if categoria %}
+          <form method="POST" action="{{ url_for('categorias.editar_categoria_post', id=categoria.id) }}">
+        {% else %}
+          <form method="POST" action="{{ url_for('categorias.nova_categoria_post') }}">
+        {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Nome *</label>
+            <input type="text" name="nome" class="form-control"
+                   value="{{ categoria.nome if categoria else '' }}"
+                   placeholder="Ex: Lanches" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descricao</label>
+            <textarea name="descricao" class="form-control" rows="3"
+                      placeholder="Descricao opcional">{{ categoria.descricao if categoria else '' }}</textarea>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{{ url_for('categorias.listar_categorias') }}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

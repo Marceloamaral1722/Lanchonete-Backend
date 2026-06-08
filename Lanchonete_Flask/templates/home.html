@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block titulo %}Dashboard - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+
+{# Cabecalho #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Dashboard</h4>
+    <p class="text-muted small mb-0">
+      {% if usuario.tipo == 'admin' %}Administrador{% else %}Atendente{% endif %}
+      &mdash; {{ usuario.nome }}
+    </p>
+  </div>
+  <a href="{{ url_for('pedidos.novo_pedido') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg"></i> Novo Pedido
+  </a>
+</div>
+
+{# Stat cards operacionais #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="stat-icon bg-warning-soft"><i class="bi bi-hourglass-split text-warning"></i></div>
+        <div class="stat-value">{{ pendentes }}</div>
+        <div class="stat-label">Pendentes</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="stat-icon bg-primary-soft"><i class="bi bi-fire text-primary"></i></div>
+        <div class="stat-value">{{ em_preparo }}</div>
+        <div class="stat-label">Em Preparo</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="stat-icon bg-success-soft"><i class="bi bi-check-circle text-success"></i></div>
+        <div class="stat-value">{{ entregues_hoje }}</div>
+        <div class="stat-label">Entregues Hoje</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="stat-icon bg-danger-soft"><i class="bi bi-currency-dollar text-danger"></i></div>
+        <div class="stat-value">R$&nbsp;{{ '%.0f' | format(faturamento_hoje) }}</div>
+        <div class="stat-label">Faturamento Hoje</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Abas operacionais #}
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <button class="nav-link active" id="tab-btn-pedidos" onclick="mostrarAba('pedidos', this)">
+      <i class="bi bi-receipt"></i> Pedidos
+      {% if pendentes > 0 %}
+      <span class="badge bg-danger ms-1">{{ pendentes }}</span>
+      {% endif %}
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" id="tab-btn-produtos" onclick="mostrarAba('produtos', this)">
+      <i class="bi bi-box-seam"></i> Produtos
+    </button>
+  </li>
+  {% if usuario.tipo == 'admin' %}
+  <li class="nav-item">
+    <button class="nav-link" id="tab-btn-clientes" onclick="mostrarAba('clientes', this)">
+      <i class="bi bi-people"></i> Clientes
+    </button>
+  </li>
+  {% endif %}
+</ul>
+
+
+{# === ABA PEDIDOS (padrao) === #}
+<div id="aba-pedidos">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Pedidos Recentes
+      <span class="text-muted fw-normal small">({{ total_pedidos }} total)</span>
+    </h5>
+    <a href="{{ url_for('pedidos.listar_pedidos') }}" class="btn btn-outline-secondary btn-sm">
+      Ver todos <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+
+  {% if grupos_home %}
+  <div class="row g-3">
+    {% for grupo in grupos_home %}
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 shadow-sm h-100" style="border-radius:1rem;overflow:hidden">
+
+        {# Cabecalho do card — cliente #}
+        <div class="card-header border-0 py-3 px-4" style="background:#18181B;color:white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center justify-content-center rounded-circle bg-danger"
+                   style="width:34px;height:34px;font-size:.85rem;font-weight:700;flex-shrink:0">
+                {{ grupo.cliente.nome[0] | upper }}
+              </div>
+              <div>
+                <div class="fw-bold" style="font-size:.9rem">{{ grupo.cliente.nome }}</div>
+                <div style="font-size:.72rem;opacity:.6">
+                  {{ grupo.pedidos | length }} pedido{{ 's' if grupo.pedidos | length > 1 else '' }}
+                </div>
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold" style="color:#EF4444;font-size:.95rem">
+                R$ {{ '%.2f' | format(grupo.total) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Itens do cliente #}
+        <div class="card-body p-0">
+          {% for ped in grupo.pedidos %}
+          <div class="d-flex align-items-center gap-3 px-4 py-2
+                      {% if not loop.last %}border-bottom{% endif %}">
+
+            {# Emoji categoria #}
+            <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                 style="width:36px;height:36px;background:#FEF3C7;font-size:1.2rem">
+              {% set nc = ped.produto.categoria.nome | lower %}
+              {% if 'lanche' in nc or 'burguer' in nc %}🍔
+              {% elif 'bebida' in nc or 'suco' in nc %}🥤
+              {% elif 'por' in nc or 'frita' in nc %}🍟
+              {% elif 'sobremesa' in nc or 'sorvete' in nc %}🍦
+              {% elif 'combo' in nc %}🎁
+              {% else %}🍽️{% endif %}
+            </div>
+
+            {# Info #}
+            <div class="flex-grow-1 min-width-0">
+              <div class="fw-semibold" style="font-size:.85rem">{{ ped.produto.nome }}</div>
+              <div class="text-muted" style="font-size:.72rem">
+                {{ ped.quantidade }}x &bull; {{ ped.data_hora.strftime('%H:%M') if ped.data_hora else '' }}
+              </div>
+            </div>
+
+            {# Status #}
+            <div class="text-end flex-shrink-0">
+              {% if ped.status == 'pendente' %}<span class="badge-pendente d-block mb-1">Pendente</span>
+              {% elif ped.status == 'em_preparo' %}<span class="badge-em_preparo d-block mb-1">Em Preparo</span>
+              {% elif ped.status == 'pronto' %}<span class="badge-pronto d-block mb-1">Pronto</span>
+              {% elif ped.status == 'entregue' %}<span class="badge-entregue d-block mb-1">Entregue</span>
+              {% elif ped.status == 'cancelado' %}<span class="badge-cancelado d-block mb-1">Cancelado</span>
+              {% endif %}
+              <div class="fw-bold" style="font-size:.8rem;color:#EF4444">
+                R$ {{ '%.2f' | format(ped.total) }}
+              </div>
+            </div>
+
+            {# Botao editar #}
+            <a href="{{ url_for('pedidos.editar_pedido', id=ped.id) }}"
+               class="btn btn-sm btn-outline-primary px-2 flex-shrink-0" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-receipt"></i>
+    <p class="mt-2">Nenhum pedido registrado ainda.</p>
+    <a href="{{ url_for('pedidos.novo_pedido') }}" class="btn btn-primary">Novo Pedido</a>
+  </div>
+  {% endif %}
+
+</div>
+
+
+{# === ABA PRODUTOS === #}
+<div id="aba-produtos" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Produtos <span class="text-muted fw-normal small">({{ total_produtos }})</span></h5>
+    {% if usuario.tipo == 'admin' %}
+    <a href="{{ url_for('produtos.novo_produto') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg"></i> Novo Produto
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="row g-3">
+    {% for p in ultimos_produtos %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card produto-card h-100">
+        <div class="produto-img" style="height:100px;font-size:2.5rem">
+          {% set nc = p.categoria.nome | lower %}
+          {% if 'lanche' in nc or 'burguer' in nc %}🍔
+          {% elif 'bebida' in nc or 'suco' in nc %}🥤
+          {% elif 'por' in nc or 'frita' in nc %}🍟
+          {% elif 'sobremesa' in nc or 'sorvete' in nc %}🍦
+          {% elif 'combo' in nc %}🎁
+          {% else %}🍽️{% endif %}
+        </div>
+        <div class="card-body d-flex flex-column py-2 px-3">
+          <span class="badge-categoria mb-1">{{ p.categoria.nome }}</span>
+          <h6 class="mb-0 fw-bold small">{{ p.nome }}</h6>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="produto-preco" style="font-size:.95rem">R$ {{ '%.2f' | format(p.preco) }}</span>
+            {% if usuario.tipo == 'admin' %}
+            <a href="{{ url_for('produtos.editar_produto', id=p.id) }}"
+               class="btn btn-sm btn-outline-primary px-2">
+              <i class="bi bi-pencil"></i>
+            </a>
+            {% endif %}
+          </div>
+          {% if p.estoque <= 5 %}
+          <small class="text-danger mt-1"><i class="bi bi-exclamation-triangle"></i> Estoque: {{ p.estoque }}</small>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-3 text-end">
+    <a href="{{ url_for('produtos.listar_produtos') }}" class="small link-secondary">
+      Ver todos os produtos &rarr;
+    </a>
+  </div>
+</div>
+
+
+{# === ABA CLIENTES (admin only) === #}
+{% if usuario.tipo == 'admin' %}
+<div id="aba-clientes" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Clientes <span class="text-muted fw-normal small">({{ total_clientes }})</span></h5>
+    <a href="{{ url_for('clientes.novo_cliente') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus"></i> Novo Cliente
+    </a>
+  </div>
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr><th>#</th><th>Nome</th><th>CPF</th><th>Telefone</th><th>E-mail</th><th>Acoes</th></tr>
+        </thead>
+        <tbody>
+          {% for c in ultimos_clientes %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td class="fw-semibold">{{ c.nome }}</td>
+            <td class="text-muted small">{{ c.cpf }}</td>
+            <td>{{ c.telefone or '-' }}</td>
+            <td>{{ c.email or '-' }}</td>
+            <td>
+              <a href="{{ url_for('clientes.editar_cliente', id=c.id) }}"
+                 class="btn btn-sm btn-outline-primary px-2">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center py-4 text-muted">Nenhum cliente cadastrado</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="mt-2 text-end">
+    <a href="{{ url_for('clientes.listar_clientes') }}" class="small link-secondary">Ver todos os clientes &rarr;</a>
+  </div>
+</div>
+{% endif %}
+
+
+<script>
+  function mostrarAba(aba, btn) {
+    ['pedidos', 'produtos', 'clientes'].forEach(function(a) {
+      var el = document.getElementById('aba-' + a);
+      if (el) el.classList.add('d-none');
+      var tb = document.getElementById('tab-btn-' + a);
+      if (tb) tb.classList.remove('active');
+    });
+    var alvo = document.getElementById('aba-' + aba);
+    if (alvo) alvo.classList.remove('d-none');
+    if (btn)  btn.classList.add('active');
+  }
+</script>
+
+{% endblock %}

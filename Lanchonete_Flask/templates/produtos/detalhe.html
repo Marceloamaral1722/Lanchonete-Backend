@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ produto.nome }} - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">{{ produto.nome }}</h5>
+        <span class="badge bg-light text-dark border">{{ produto.categoria.nome }}</span>
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless">
+          <tbody>
+            <tr>
+              <th class="text-muted" style="width:35%">Descricao</th>
+              <td>{{ produto.descricao or '-' }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Preco</th>
+              <td><strong class="text-danger">R$ {{ '%.2f' | format(produto.preco) }}</strong></td>
+            </tr>
+            <tr>
+              <th class="text-muted">Estoque</th>
+              <td>
+                {% if produto.estoque <= 5 %}
+                  <span class="text-danger fw-bold">{{ produto.estoque }} unidades</span>
+                  <span class="badge bg-danger ms-1">Estoque baixo</span>
+                {% else %}
+                  {{ produto.estoque }} unidades
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="text-muted">Categoria</th>
+              <td>{{ produto.categoria.nome }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Cadastrado em</th>
+              <td>{{ produto.criado_em.strftime('%d/%m/%Y %H:%M') if produto.criado_em else '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer bg-white d-flex gap-2">
+        <a href="{{ url_for('produtos.editar_produto', id=produto.id) }}" class="btn btn-primary btn-sm">
+          <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('produtos.listar_produtos') }}" class="btn btn-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

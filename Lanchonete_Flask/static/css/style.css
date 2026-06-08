@@ -1,0 +1,325 @@
+:root {
+  --cor-primary: #EF4444;
+  --cor-primary-dark: #DC2626;
+  --cor-secondary: #18181B;
+  --cor-accent: #FBBF24;
+  --cor-bg: #F8FAFC;
+  --cor-card: #ffffff;
+}
+
+/* Bootstrap primary override */
+.btn-primary { background-color: var(--cor-primary); border-color: var(--cor-primary); }
+.btn-primary:hover { background-color: var(--cor-primary-dark); border-color: var(--cor-primary-dark); }
+.btn-outline-primary { color: var(--cor-primary); border-color: var(--cor-primary); }
+.btn-outline-primary:hover { background-color: var(--cor-primary); border-color: var(--cor-primary); color: white; }
+.text-primary { color: var(--cor-primary) !important; }
+.bg-primary { background-color: var(--cor-primary) !important; }
+.nav-link.active { color: var(--cor-primary) !important; }
+.nav-tabs .nav-link.active { border-color: #dee2e6 #dee2e6 #fff; color: var(--cor-primary); }
+.spinner-border.text-primary { color: var(--cor-primary) !important; }
+.badge.bg-primary { background-color: var(--cor-primary) !important; }
+
+/* ─── Auth pages ─── */
+.auth-body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #18181B 0%, #27272A 40%, var(--cor-primary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.logo-icon {
+  font-size: 3rem;
+  display: block;
+}
+
+.logo-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--cor-secondary);
+  margin: 0.25rem 0 0;
+  letter-spacing: -0.5px;
+}
+
+.logo-subtitle {
+  color: #71717A;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ─── App pages ─── */
+.app-body {
+  background-color: var(--cor-bg);
+  min-height: 100vh;
+}
+
+.app-navbar {
+  background: var(--cor-secondary);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.app-navbar .navbar-brand {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-size: 1.2rem;
+}
+
+.app-navbar .navbar-brand span.brand-dot {
+  color: var(--cor-primary);
+}
+
+/* ─── Categoria buttons ─── */
+.categoria-btn {
+  border-radius: 2rem;
+  font-size: 0.82rem;
+  padding: 0.3rem 1.1rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.categoria-btn:not(.btn-primary) {
+  background: white;
+  color: #52525B;
+  border-color: #E4E4E7;
+}
+
+.categoria-btn:not(.btn-primary):hover {
+  background: var(--cor-secondary);
+  color: white;
+  border-color: var(--cor-secondary);
+}
+
+/* ─── Product cards ─── */
+.produto-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  transition: transform 0.18s, box-shadow 0.18s;
+  overflow: hidden;
+}
+
+.produto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+}
+
+.produto-img {
+  height: 140px;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+}
+
+.produto-preco {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--cor-primary);
+}
+
+.badge-categoria {
+  background-color: #FEF2F2;
+  color: var(--cor-primary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  padding: 0.2rem 0.6rem;
+  display: inline-block;
+}
+
+/* ─── Controle de quantidade no card ─── */
+.card-qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-qty-ctrl .btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.qty-input {
+  width: 42px;
+  height: 28px;
+  text-align: center;
+  border: 1.5px solid #E4E4E7;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0;
+  -moz-appearance: textfield;
+  color: var(--cor-secondary);
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.qty-input:focus {
+  outline: none;
+  border-color: var(--cor-primary);
+}
+
+/* ─── Carrinho ─── */
+.carrinho-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #F4F4F5;
+}
+
+.carrinho-item:last-child { border-bottom: none; }
+
+.carrinho-qtd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carrinho-qtd button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.8rem;
+}
+
+/* ─── Status badges ─── */
+.badge-pendente   { background-color: #FEF3C7; color: #92400E; border-radius: .4rem; padding: .3rem .7rem; font-size:.75rem; font-weight:600; }
+.badge-em_preparo { background-color: #DBEAFE; color: #1E40AF; border-radius: .4rem; padding: .3rem .7rem; font-size:.75rem; font-weight:600; }
+.badge-pronto     { background-color: #D1FAE5; color: #065F46; border-radius: .4rem; padding: .3rem .7rem; font-size:.75rem; font-weight:600; }
+.badge-entregue   { background-color: #F4F4F5; color: #3F3F46; border-radius: .4rem; padding: .3rem .7rem; font-size:.75rem; font-weight:600; }
+.badge-cancelado  { background-color: #FEE2E2; color: #991B1B; border-radius: .4rem; padding: .3rem .7rem; font-size:.75rem; font-weight:600; }
+
+/* ─── Pedido card (cliente) ─── */
+.pedido-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+}
+
+.pedido-card .card-header {
+  background: white;
+  border-radius: 1rem 1rem 0 0 !important;
+  border-bottom: 1px solid #F4F4F5;
+}
+
+/* ─── Admin stat cards ─── */
+.stat-card {
+  border-radius: 1rem !important;
+}
+
+.stat-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.bg-primary-soft { background-color: #FEF2F2; }
+.bg-warning-soft { background-color: #FFFBEB; }
+.bg-success-soft { background-color: #F0FDF4; }
+.bg-danger-soft  { background-color: #FFF1F2; }
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--cor-secondary);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: #71717A;
+  font-weight: 500;
+}
+
+/* ─── Table ─── */
+.table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #71717A;
+  font-weight: 700;
+}
+
+.table td {
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+
+/* ─── Empty state ─── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #A1A1AA;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  opacity: 0.4;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Nav tabs override ─── */
+.nav-tabs {
+  border-bottom: 2px solid #E4E4E7;
+}
+
+.nav-tabs .nav-link {
+  color: #71717A;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.nav-tabs .nav-link.active {
+  border-bottom-color: var(--cor-primary);
+  color: var(--cor-primary) !important;
+  background: none;
+}

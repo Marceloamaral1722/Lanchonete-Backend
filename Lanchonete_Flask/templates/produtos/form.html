@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block titulo %}
+  {% if produto %}Editar Produto{% else %}Novo Produto{% endif %} - Maxismus Lanches
+{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">
+          {% if produto %}
+            <i class="bi bi-pencil"></i> Editar Produto
+          {% else %}
+            <i class="bi bi-plus-lg"></i> Novo Produto
+          {% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if produto %}
+          <form method="POST" action="{{ url_for('produtos.editar_produto_post', id=produto.id) }}">
+        {% else %}
+          <form method="POST" action="{{ url_for('produtos.novo_produto_post') }}">
+        {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Nome *</label>
+            <input type="text" name="nome" class="form-control"
+                   value="{{ produto.nome if produto else '' }}"
+                   placeholder="Ex: X-Burguer" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descricao</label>
+            <textarea name="descricao" class="form-control" rows="2"
+                      placeholder="Descricao do produto">{{ produto.descricao if produto else '' }}</textarea>
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Preco (R$) *</label>
+              <input type="number" name="preco" class="form-control" step="0.01" min="0"
+                     value="{{ produto.preco if produto else '' }}"
+                     placeholder="0.00" required />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Estoque *</label>
+              <input type="number" name="estoque" class="form-control" min="0"
+                     value="{{ produto.estoque if produto else '0' }}"
+                     placeholder="0" required />
+            </div>
+          </div>
+          <div class="mb-3 mt-2">
+            <label class="form-label">Categoria *</label>
+            <select name="categoria_id" class="form-select" required>
+              <option value="">Selecione...</option>
+              {# Laco pelas categorias disponiveis #}
+              {% for cat in categorias %}
+                <option value="{{ cat.id }}"
+                  {% if produto and produto.categoria_id == cat.id %}selected{% endif %}>
+                  {{ cat.nome }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{{ url_for('produtos.listar_produtos') }}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

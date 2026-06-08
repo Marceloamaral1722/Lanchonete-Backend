@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block titulo %}Produtos - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-box-seam"></i> Produtos</h4>
+  {% if usuario.tipo == 'admin' %}
+  <a href="{{ url_for('produtos.novo_produto') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Novo Produto
+  </a>
+  {% endif %}
+</div>
+
+{# Filtros por categoria #}
+{% if categorias %}
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  <a href="{{ url_for('produtos.listar_produtos') }}"
+     class="btn btn-sm categoria-btn {% if not categoria_atual %}btn-primary{% endif %}">
+    Todos
+  </a>
+  {% for cat in categorias %}
+  <a href="{{ url_for('produtos.listar_produtos', categoria_id=cat.id) }}"
+     class="btn btn-sm categoria-btn {% if categoria_atual == cat.id %}btn-primary{% endif %}">
+    {{ cat.nome }}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Grid de cards igual ao cardapio original #}
+{% if produtos %}
+<div class="row g-3">
+  {% for produto in produtos %}
+  <div class="col-6 col-md-4 col-lg-3">
+    <div class="card produto-card h-100">
+
+      {# Imagem / emoji por categoria #}
+      <div class="produto-img">
+        {% set nome_cat = produto.categoria.nome | lower %}
+        {% set nome_prod = produto.nome | lower %}
+        {% if 'lanche' in nome_cat or 'burguer' in nome_cat or 'burger' in nome_cat %}🍔
+        {% elif 'bebida' in nome_cat or 'suco' in nome_cat or 'refriger' in nome_cat %}🥤
+        {% elif 'por' in nome_cat or 'frita' in nome_cat or 'fries' in nome_cat %}🍟
+        {% elif 'sobremesa' in nome_cat or 'doce' in nome_cat or 'sorvete' in nome_cat %}
+          {% if 'sorvete' in nome_prod or 'split' in nome_prod or 'gelado' in nome_prod %}🍦
+          {% elif 'browni' in nome_prod or 'chocolate' in nome_prod or 'trufa' in nome_prod %}🍫
+          {% elif 'cocada' in nome_prod or 'coco' in nome_prod %}🥥
+          {% elif 'bolo' in nome_prod or 'torta' in nome_prod %}🎂
+          {% elif 'pudim' in nome_prod or 'mousse' in nome_prod %}🍮
+          {% else %}🍰{% endif %}
+        {% elif 'combo' in nome_cat %}🎁
+        {% elif 'pizza' in nome_cat %}🍕
+        {% elif 'salada' in nome_cat %}🥗
+        {% else %}🍽️
+        {% endif %}
+      </div>
+
+      <div class="card-body d-flex flex-column pb-2">
+        <span class="badge-categoria mb-1">{{ produto.categoria.nome }}</span>
+        <h6 class="mb-1 fw-bold">{{ produto.nome }}</h6>
+        <p class="text-muted small mb-2 flex-grow-1">{{ produto.descricao or '&nbsp;' }}</p>
+
+        <div class="d-flex justify-content-between align-items-center mt-auto">
+          <span class="produto-preco">R$ {{ '%.2f' | format(produto.preco) }}</span>
+
+          {# Botoes de acao #}
+          <div class="d-flex gap-1">
+            <a href="{{ url_for('produtos.detalhe_produto', id=produto.id) }}"
+               class="btn btn-sm btn-outline-secondary px-2" title="Ver detalhes">
+              <i class="bi bi-eye"></i>
+            </a>
+            {% if usuario.tipo == 'admin' %}
+            <a href="{{ url_for('produtos.editar_produto', id=produto.id) }}"
+               class="btn btn-sm btn-outline-primary px-2" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('produtos.deletar_produto', id=produto.id) }}"
+                  class="d-inline" onsubmit="return confirm('Excluir {{ produto.nome }}?')">
+              <button type="submit" class="btn btn-sm btn-outline-danger px-2" title="Excluir">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Estoque baixo #}
+        {% if produto.estoque <= 5 %}
+        <div class="mt-1">
+          <small class="text-danger fw-semibold">
+            <i class="bi bi-exclamation-triangle"></i> Estoque: {{ produto.estoque }}
+          </small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-box-seam"></i>
+  <p class="mt-2">Nenhum produto cadastrado.</p>
+  {% if usuario.tipo == 'admin' %}
+  <a href="{{ url_for('produtos.novo_produto') }}" class="btn btn-primary">Cadastrar produto</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
