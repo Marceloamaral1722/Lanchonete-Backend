@@ -9,7 +9,6 @@ produtos_bp = Blueprint('produtos', __name__)
 @produtos_bp.route('/produtos')
 @login_required
 def listar_produtos():
-    """Listagem publica (logado): clientes veem o cardapio, admin veem com acoes."""
     categoria_id = request.args.get('categoria_id', type=int)
     categorias   = Categoria.query.order_by(Categoria.nome).all()
     query        = Produto.query.order_by(Produto.nome)

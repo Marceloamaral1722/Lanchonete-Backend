@@ -4,7 +4,6 @@ from flask_login import current_user
 
 
 def admin_required(f):
-    """Decorator: bloqueia acesso de usuarios comuns a rotas exclusivas de admin."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated or current_user.tipo != 'admin':

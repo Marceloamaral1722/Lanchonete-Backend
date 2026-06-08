@@ -15,7 +15,6 @@ class Usuario(db.Model):
     admin      = db.Column(db.Boolean, default=False)
     criado_em  = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # token para recuperação de senha
     token_recuperacao  = db.Column(db.String(100), nullable=True)
     token_expiracao    = db.Column(db.DateTime, nullable=True)
 
@@ -80,19 +79,15 @@ class Pedido(db.Model):
     itens = db.relationship('ItemPedido', backref='pedido', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self, incluir_itens=False):
-        dados = {
+        return {
             'id':           self.id,
             'usuario_id':   self.usuario_id,
             'nome_usuario': self.usuario.nome if self.usuario else None,
             'status':       self.status,
             'total':        float(self.total),
-            'criado_em':    self.criado_em.isoformat() if self.criado_em else None
+            'criado_em':    self.criado_em.isoformat() if self.criado_em else None,
+            'itens':        [i.to_dict() for i in self.itens] if incluir_itens else []
         }
-        if incluir_itens:
-            dados['itens'] = [i.to_dict() for i in self.itens]
-        else:
-            dados['itens'] = [i.to_dict() for i in self.itens]
-        return dados
 
 
 class ItemPedido(db.Model):

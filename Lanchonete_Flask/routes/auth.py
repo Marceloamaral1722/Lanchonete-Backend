@@ -10,7 +10,6 @@ from utils import admin_required
 auth_bp = Blueprint('auth', __name__)
 
 
-# ─── Rota raiz: redireciona pelo tipo ───────────────────────────────────────
 @auth_bp.route('/')
 def index():
     if current_user.is_authenticated:
@@ -20,7 +19,6 @@ def index():
     return redirect(url_for('auth.login'))
 
 
-# ─── Login / Logout / Cadastro ──────────────────────────────────────────────
 @auth_bp.route('/login', methods=['GET'])
 def login():
     if current_user.is_authenticated:
@@ -39,7 +37,6 @@ def login_post():
         return redirect(url_for('auth.login'))
 
     login_user(usuario)
-    # Redireciona pelo tipo — NUNCA deixa cliente ir para /home
     if usuario.tipo == 'admin':
         return redirect(url_for('auth.home'))
     return redirect(url_for('auth.cardapio'))
@@ -96,9 +93,8 @@ def recuperar_senha():
     return redirect(url_for('auth.login'))
 
 
-# ─── ADMIN: Dashboard operacional ────────────────────────────────────────────
 @auth_bp.route('/home')
-@admin_required          # ← SOMENTE ADMIN
+@admin_required
 def home():
     from models import Produto, Cliente, Pedido
     hoje = date.today()
@@ -118,7 +114,6 @@ def home():
     ultimos_produtos = Produto.query.order_by(Produto.id.desc()).limit(8).all()
     ultimos_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(8).all()
 
-    # Agrupa ultimos pedidos por cliente para cards no dashboard
     grupos_home = OrderedDict()
     for p in ultimos_pedidos:
         cid = p.cliente_id
@@ -142,12 +137,10 @@ def home():
                            ultimos_clientes=ultimos_clientes)
 
 
-# ─── CLIENTE: Cardapio ────────────────────────────────────────────────────────
 @auth_bp.route('/cardapio')
 @login_required
 def cardapio():
     from models import Produto, Categoria
-    # Admin que acessar /cardapio vai para o dashboard
     if current_user.tipo == 'admin':
         return redirect(url_for('auth.home'))
     produtos   = Produto.query.order_by(Produto.nome).all()

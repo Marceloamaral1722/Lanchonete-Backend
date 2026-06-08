@@ -11,7 +11,6 @@ pedidos_bp = Blueprint('pedidos', __name__)
 @pedidos_bp.route('/pedidos')
 @login_required
 def listar_pedidos():
-    """Admin ve todos; cliente ve agrupado por grupo_id (carrinho)."""
     if current_user.tipo == 'admin':
         filtro_status = request.args.get('status', '')
         query = Pedido.query.order_by(Pedido.data_hora.desc())
@@ -19,7 +18,6 @@ def listar_pedidos():
             query = query.filter_by(status=filtro_status)
         pedidos = query.all()
 
-        # Agrupa por cliente para visao em cards
         from collections import OrderedDict
         grupos_cliente = OrderedDict()
         for p in pedidos:
@@ -38,7 +36,6 @@ def listar_pedidos():
     else:
         pedidos = Pedido.query.filter_by(usuario_id=current_user.id)\
                               .order_by(Pedido.data_hora.desc()).all()
-        # Agrupa por grupo_id — cada grupo e um card separado
         grupos = {}
         sem_grupo = []
         for p in pedidos:
@@ -47,10 +44,9 @@ def listar_pedidos():
                     grupos[p.grupo_id] = []
                 grupos[p.grupo_id].append(p)
             else:
-                sem_grupo.append([p])  # pedido avulso vira grupo de 1
+                sem_grupo.append([p])
 
         grupos_lista = list(grupos.values()) + sem_grupo
-        # Ordena pelo pedido mais recente de cada grupo
         grupos_lista.sort(key=lambda g: g[0].data_hora or 0, reverse=True)
 
         return render_template('pedidos/lista.html',
@@ -102,8 +98,6 @@ def novo_pedido_post():
     db.session.commit()
     flash('Pedido realizado! Acompanhe o status em Meus Pedidos.', 'success')
 
-    if current_user.tipo == 'admin':
-        return redirect(url_for('pedidos.listar_pedidos'))
     return redirect(url_for('pedidos.listar_pedidos'))
 
 
@@ -111,7 +105,6 @@ def novo_pedido_post():
 @login_required
 def editar_pedido(id):
     pedido = Pedido.query.get_or_404(id)
-    # Cliente so pode ver/editar o proprio pedido
     if current_user.tipo != 'admin' and pedido.usuario_id != current_user.id:
         flash('Voce nao tem permissao para editar este pedido.', 'danger')
         return redirect(url_for('pedidos.listar_pedidos'))
@@ -139,7 +132,6 @@ def editar_pedido_post(id):
     pedido.quantidade  = int(request.form.get('quantidade', pedido.quantidade))
     pedido.observacoes = request.form.get('observacoes', pedido.observacoes)
 
-    # So admin pode mudar o status
     if current_user.tipo == 'admin':
         pedido.status = request.form.get('status', pedido.status)
 
@@ -155,7 +147,6 @@ def editar_pedido_post(id):
 @pedidos_bp.route('/carrinho/finalizar', methods=['POST'])
 @login_required
 def finalizar_carrinho():
-    """Recebe o carrinho em JSON, cria um Pedido por item, vincula ao usuario logado."""
     carrinho_json = request.form.get('carrinho', '[]')
     observacoes   = request.form.get('observacoes', '')
 
@@ -169,7 +160,6 @@ def finalizar_carrinho():
         flash('Seu carrinho esta vazio.', 'warning')
         return redirect(url_for('auth.cardapio'))
 
-    # Encontra ou cria um Cliente vinculado a este usuario
     cliente = Cliente.query.filter_by(email=current_user.email).first()
     if not cliente:
         cliente = Cliente(
@@ -181,7 +171,7 @@ def finalizar_carrinho():
         db.session.add(cliente)
         db.session.flush()
 
-    grupo = secrets.token_hex(8)  # ID unico para agrupar todos os itens deste carrinho
+    grupo = secrets.token_hex(8)
 
     criados = 0
     for item in itens:
