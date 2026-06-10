@@ -198,34 +198,53 @@
     }
   }
 
-  function abrirResumo() {
+  function renderizarCarrinho() {
     var html = '';
     var totalValor = 0;
     Object.keys(carrinho).forEach(function(id) {
-      var qtd   = carrinho[id];
-      var prod  = produtos[id];
+      var qtd    = carrinho[id];
+      var prod   = produtos[id];
       var subtot = qtd * prod.preco;
       totalValor += subtot;
       html += '<div class="d-flex justify-content-between align-items-center py-2 border-bottom">' +
-                '<div>' +
+                '<div class="flex-grow-1">' +
                   '<div class="fw-semibold">' + prod.nome + '</div>' +
                   '<div class="text-muted small">' + prod.cat + '</div>' +
                 '</div>' +
                 '<div class="d-flex align-items-center gap-2">' +
                   '<div class="card-qty-ctrl">' +
-                    '<button class="btn btn-sm btn-outline-secondary" onclick="alterar(' + id + ',-1);abrirResumo()"><i class="bi bi-dash"></i></button>' +
+                    '<button class="btn btn-sm btn-outline-secondary" onclick="alterarModal(' + id + ',-1)"><i class="bi bi-dash"></i></button>' +
                     '<span class="qty-input d-flex align-items-center justify-content-center" style="width:36px;font-weight:700">' + qtd + '</span>' +
-                    '<button class="btn btn-sm btn-primary" onclick="alterar(' + id + ',+1);abrirResumo()"><i class="bi bi-plus"></i></button>' +
+                    '<button class="btn btn-sm btn-primary" onclick="alterarModal(' + id + ',+1)"><i class="bi bi-plus"></i></button>' +
                   '</div>' +
                   '<span class="fw-bold" style="min-width:70px;text-align:right;color:#EF4444">R$ ' + subtot.toFixed(2).replace('.', ',') + '</span>' +
+                  '<button class="btn btn-sm btn-outline-danger ms-1" onclick="removerItem(' + id + ')" title="Remover">' +
+                    '<i class="bi bi-trash"></i>' +
+                  '</button>' +
                 '</div>' +
               '</div>';
     });
 
     document.getElementById('lista-carrinho').innerHTML = html || '<p class="text-muted text-center py-3">Carrinho vazio</p>';
     document.getElementById('modal-total-carrinho').textContent = 'R$ ' + totalValor.toFixed(2).replace('.', ',');
+  }
 
-    new bootstrap.Modal(document.getElementById('modalCarrinho')).show();
+  function abrirResumo() {
+    renderizarCarrinho();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCarrinho')).show();
+  }
+
+  function alterarModal(id, delta) {
+    alterar(id, delta);
+    renderizarCarrinho();
+  }
+
+  function removerItem(id) {
+    delete carrinho[id];
+    var inp = document.getElementById('qty-' + id);
+    if (inp) inp.value = 0;
+    atualizarBarra();
+    renderizarCarrinho();
   }
 
   function prepararEnvio() {

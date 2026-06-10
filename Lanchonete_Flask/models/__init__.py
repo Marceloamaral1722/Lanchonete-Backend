@@ -9,12 +9,15 @@ db = SQLAlchemy()
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuarios'
 
-    id         = db.Column(db.Integer, primary_key=True)
-    nome       = db.Column(db.String(100), nullable=False)
-    email      = db.Column(db.String(150), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(255), nullable=False)
-    tipo       = db.Column(db.String(10), default='comum')  # admin ou comum
-    criado_em  = db.Column(db.DateTime, default=datetime.utcnow)
+    id                 = db.Column(db.Integer, primary_key=True)
+    nome               = db.Column(db.String(100), nullable=False)
+    email              = db.Column(db.String(150), unique=True, nullable=False)
+    senha_hash         = db.Column(db.String(255), nullable=False)
+    tipo               = db.Column(db.String(10), default='comum')
+    criado_em          = db.Column(db.DateTime, default=datetime.utcnow)
+    telefone           = db.Column(db.String(20), nullable=True)
+    token_recuperacao  = db.Column(db.String(100), nullable=True)
+    token_expiracao    = db.Column(db.DateTime, nullable=True)
 
     pedidos = db.relationship('Pedido', backref='usuario', lazy=True)
 
@@ -55,7 +58,6 @@ class Cliente(db.Model):
 
     id        = db.Column(db.Integer, primary_key=True)
     nome      = db.Column(db.String(100), nullable=False)
-    cpf       = db.Column(db.String(14), unique=True, nullable=False)
     telefone  = db.Column(db.String(20))
     email     = db.Column(db.String(150))
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)

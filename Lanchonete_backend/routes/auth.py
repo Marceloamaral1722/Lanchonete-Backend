@@ -76,7 +76,7 @@ def recuperar_senha():
 
     _enviar_email_recuperacao(usuario.email, usuario.nome, token)
 
-    return jsonify({'message': 'E-mail de recuperação enviado com sucesso.'})
+    return jsonify({'message': 'Instruções enviadas. Use o token para redefinir sua senha.', 'token': token})
 
 
 @auth_bp.route('/redefinir-senha', methods=['POST'])

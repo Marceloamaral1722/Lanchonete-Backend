@@ -79,6 +79,12 @@
               <li><span class="dropdown-item-text text-muted small">{{ usuario.email }}</span></li>
               <li><hr class="dropdown-divider"></li>
               <li>
+                <a class="dropdown-item" href="{{ url_for('auth.perfil') }}">
+                  <i class="bi bi-person-gear"></i> Meu Perfil
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
                 <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
                   <i class="bi bi-box-arrow-right"></i> Sair
                 </a>
@@ -96,7 +102,7 @@
       {% if mensagens %}
         {% for categoria, mensagem in mensagens %}
           <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
-            {{ mensagem }}
+            {{ mensagem | safe }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endfor %}

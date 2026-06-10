@@ -41,7 +41,7 @@
   <div class="col-12 col-lg-6">
     <div class="card border-0 shadow-sm h-100" style="border-radius:1rem;overflow:hidden">
 
-      {# Cabecalho do card — info do cliente #}
+      {# Cabecalho do card — pedido por cliente #}
       <div class="card-header border-0 py-3 px-4"
            style="background:#18181B;color:white">
         <div class="d-flex justify-content-between align-items-center">
@@ -52,15 +52,15 @@
             </div>
             <div>
               <div class="fw-bold" style="font-size:.95rem">{{ grupo.cliente.nome }}</div>
-              <div style="font-size:.75rem;opacity:.6">{{ grupo.cliente.telefone or grupo.cliente.email or '' }}</div>
+              <div style="font-size:.75rem;opacity:.6">
+                {{ grupo.data_hora.strftime('%d/%m/%Y %H:%M') if grupo.data_hora else '' }}
+                &bull; {{ grupo.pedidos | length }} item{{ 's' if grupo.pedidos | length > 1 else '' }}
+              </div>
             </div>
           </div>
           <div class="text-end">
             <div class="fw-bold" style="color:#EF4444;font-size:1rem">
               R$ {{ '%.2f' | format(grupo.total) }}
-            </div>
-            <div style="font-size:.72rem;opacity:.6">
-              {{ grupo.pedidos | length }} pedido{{ 's' if grupo.pedidos | length > 1 else '' }}
             </div>
           </div>
         </div>

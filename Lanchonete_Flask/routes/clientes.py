@@ -36,19 +36,14 @@ def novo_cliente():
 @admin_required
 def novo_cliente_post():
     nome     = request.form.get('nome')
-    cpf      = request.form.get('cpf')
     telefone = request.form.get('telefone', '')
     email    = request.form.get('email', '')
 
-    if not nome or not cpf:
-        flash('Nome e CPF sao obrigatorios.', 'danger')
+    if not nome:
+        flash('Nome e obrigatorio.', 'danger')
         return redirect(url_for('clientes.novo_cliente'))
 
-    if Cliente.query.filter_by(cpf=cpf).first():
-        flash('CPF ja cadastrado.', 'danger')
-        return redirect(url_for('clientes.novo_cliente'))
-
-    cliente = Cliente(nome=nome, cpf=cpf, telefone=telefone, email=email)
+    cliente = Cliente(nome=nome, telefone=telefone, email=email)
     db.session.add(cliente)
     db.session.commit()
     flash('Cliente cadastrado com sucesso!', 'success')
@@ -69,7 +64,6 @@ def editar_cliente(id):
 def editar_cliente_post(id):
     cliente          = Cliente.query.get_or_404(id)
     cliente.nome     = request.form.get('nome', cliente.nome)
-    cliente.cpf      = request.form.get('cpf', cliente.cpf)
     cliente.telefone = request.form.get('telefone', cliente.telefone)
     cliente.email    = request.form.get('email', cliente.email)
     db.session.commit()

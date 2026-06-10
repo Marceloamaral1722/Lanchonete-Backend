@@ -1,5 +1,5 @@
 import secrets
-from datetime import date
+from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
@@ -51,9 +51,11 @@ def cadastro():
 
 @auth_bp.route('/cadastro', methods=['POST'])
 def cadastro_post():
-    nome  = request.form.get('nome', '').strip()
-    email = request.form.get('email', '').strip()
-    senha = request.form.get('senha', '')
+    from models import Cliente
+    nome     = request.form.get('nome', '').strip()
+    email    = request.form.get('email', '').strip()
+    telefone = request.form.get('telefone', '').strip()
+    senha    = request.form.get('senha', '')
 
     if Usuario.query.filter_by(email=email).first():
         flash('E-mail ja cadastrado.', 'danger')
@@ -62,6 +64,10 @@ def cadastro_post():
     usuario = Usuario(nome=nome, email=email, tipo='comum')
     usuario.set_senha(senha)
     db.session.add(usuario)
+
+    cliente = Cliente(nome=nome, email=email, telefone=telefone or None)
+    db.session.add(cliente)
+
     db.session.commit()
     flash('Conta criada! Faca login.', 'success')
     return redirect(url_for('auth.login'))
@@ -78,19 +84,92 @@ def logout():
 def recuperar_senha():
     email = request.form.get('email', '').strip()
     usuario = Usuario.query.filter_by(email=email).first()
-    if usuario:
-        token = secrets.token_urlsafe(16)
-        try:
-            msg = Message(
-                subject='Recuperacao de Senha - Maxismus Lanches',
-                recipients=[email],
-                body=f'Seu token de recuperacao: {token}'
-            )
-            mail.send(msg)
-        except Exception:
-            pass
-    flash('Se o e-mail existir na base, voce recebera as instrucoes.', 'info')
+    if not usuario:
+        flash('E-mail não encontrado.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    token = secrets.token_urlsafe(16)
+    usuario.token_recuperacao = token
+    usuario.token_expiracao   = datetime.utcnow() + timedelta(hours=1)
+    db.session.commit()
+    return redirect(url_for('auth.redefinir_senha', token=token))
+
+
+@auth_bp.route('/redefinir/<token>', methods=['GET'])
+def redefinir_senha(token):
+    usuario = Usuario.query.filter_by(token_recuperacao=token).first()
+    if not usuario or (usuario.token_expiracao and usuario.token_expiracao < datetime.utcnow()):
+        flash('Link inválido ou expirado. Solicite um novo.', 'danger')
+        return redirect(url_for('auth.login'))
+    return render_template('redefinir_senha.html', token=token)
+
+
+@auth_bp.route('/redefinir/<token>', methods=['POST'])
+def redefinir_senha_post(token):
+    usuario = Usuario.query.filter_by(token_recuperacao=token).first()
+    if not usuario or (usuario.token_expiracao and usuario.token_expiracao < datetime.utcnow()):
+        flash('Link inválido ou expirado.', 'danger')
+        return redirect(url_for('auth.login'))
+    nova_senha = request.form.get('nova_senha', '')
+    if len(nova_senha) < 4:
+        flash('A senha deve ter pelo menos 4 caracteres.', 'danger')
+        return render_template('redefinir_senha.html', token=token)
+    usuario.set_senha(nova_senha)
+    usuario.token_recuperacao = None
+    usuario.token_expiracao   = None
+    db.session.commit()
+    flash('Senha redefinida com sucesso! Faça login.', 'success')
     return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/perfil', methods=['GET'])
+@login_required
+def perfil():
+    return render_template('perfil.html', usuario=current_user)
+
+
+@auth_bp.route('/perfil/dados', methods=['POST'])
+@login_required
+def perfil_dados():
+    current_user.nome     = request.form.get('nome', current_user.nome).strip()
+    current_user.telefone = request.form.get('telefone', '').strip() or None
+    db.session.commit()
+    flash('Dados atualizados com sucesso!', 'success')
+    return redirect(url_for('auth.perfil'))
+
+
+@auth_bp.route('/perfil/email', methods=['POST'])
+@login_required
+def perfil_email():
+    novo_email = request.form.get('email', '').strip()
+    senha      = request.form.get('senha', '')
+    if not current_user.checar_senha(senha):
+        flash('Senha incorreta.', 'danger')
+        return redirect(url_for('auth.perfil'))
+    if Usuario.query.filter_by(email=novo_email).first():
+        flash('Este e-mail ja esta em uso.', 'danger')
+        return redirect(url_for('auth.perfil'))
+    current_user.email = novo_email
+    db.session.commit()
+    flash('E-mail atualizado com sucesso!', 'success')
+    return redirect(url_for('auth.perfil'))
+
+
+@auth_bp.route('/perfil/senha', methods=['POST'])
+@login_required
+def perfil_senha():
+    senha_atual = request.form.get('senha_atual', '')
+    nova_senha  = request.form.get('nova_senha', '')
+    if not current_user.checar_senha(senha_atual):
+        flash('Senha atual incorreta.', 'danger')
+        return redirect(url_for('auth.perfil'))
+    if len(nova_senha) < 4:
+        flash('A nova senha deve ter pelo menos 4 caracteres.', 'danger')
+        return redirect(url_for('auth.perfil'))
+    current_user.set_senha(nova_senha)
+    db.session.commit()
+    flash('Senha alterada com sucesso!', 'success')
+    return redirect(url_for('auth.perfil'))
 
 
 @auth_bp.route('/home')
@@ -116,11 +195,11 @@ def home():
 
     grupos_home = OrderedDict()
     for p in ultimos_pedidos:
-        cid = p.cliente_id
-        if cid not in grupos_home:
-            grupos_home[cid] = {'cliente': p.cliente, 'pedidos': [], 'total': 0}
-        grupos_home[cid]['pedidos'].append(p)
-        grupos_home[cid]['total'] += p.total
+        key = p.grupo_id if p.grupo_id else f'solo_{p.id}'
+        if key not in grupos_home:
+            grupos_home[key] = {'cliente': p.cliente, 'pedidos': [], 'total': 0, 'data_hora': p.data_hora}
+        grupos_home[key]['pedidos'].append(p)
+        grupos_home[key]['total'] += p.total
 
     return render_template('home.html',
                            usuario=current_user,

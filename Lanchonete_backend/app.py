@@ -43,8 +43,13 @@ def _seed_admin():
         admin.set_senha('admin123')
         db.session.add(admin)
         db.session.commit()
+    if not Usuario.query.filter_by(email='usuario@maxismus.com').first():
+        user = Usuario(nome='Usuário Teste', email='usuario@maxismus.com', admin=False)
+        user.set_senha('user123')
+        db.session.add(user)
+        db.session.commit()
 
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

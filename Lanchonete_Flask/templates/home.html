@@ -99,7 +99,7 @@
     <div class="col-12 col-lg-6">
       <div class="card border-0 shadow-sm h-100" style="border-radius:1rem;overflow:hidden">
 
-        {# Cabecalho do card — cliente #}
+        {# Cabecalho do card — pedido por cliente #}
         <div class="card-header border-0 py-3 px-4" style="background:#18181B;color:white">
           <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
@@ -110,7 +110,8 @@
               <div>
                 <div class="fw-bold" style="font-size:.9rem">{{ grupo.cliente.nome }}</div>
                 <div style="font-size:.72rem;opacity:.6">
-                  {{ grupo.pedidos | length }} pedido{{ 's' if grupo.pedidos | length > 1 else '' }}
+                  {{ grupo.data_hora.strftime('%d/%m/%Y %H:%M') if grupo.data_hora else '' }}
+                  &bull; {{ grupo.pedidos | length }} item{{ 's' if grupo.pedidos | length > 1 else '' }}
                 </div>
               </div>
             </div>
@@ -252,14 +253,13 @@
     <div class="table-responsive">
       <table class="table table-hover mb-0">
         <thead class="table-light">
-          <tr><th>#</th><th>Nome</th><th>CPF</th><th>Telefone</th><th>E-mail</th><th>Acoes</th></tr>
+          <tr><th>#</th><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Acoes</th></tr>
         </thead>
         <tbody>
           {% for c in ultimos_clientes %}
           <tr>
             <td>{{ c.id }}</td>
             <td class="fw-semibold">{{ c.nome }}</td>
-            <td class="text-muted small">{{ c.cpf }}</td>
             <td>{{ c.telefone or '-' }}</td>
             <td>{{ c.email or '-' }}</td>
             <td>

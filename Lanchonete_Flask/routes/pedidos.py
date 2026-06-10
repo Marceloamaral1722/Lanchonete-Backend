@@ -21,11 +21,11 @@ def listar_pedidos():
         from collections import OrderedDict
         grupos_cliente = OrderedDict()
         for p in pedidos:
-            cid = p.cliente_id
-            if cid not in grupos_cliente:
-                grupos_cliente[cid] = {'cliente': p.cliente, 'pedidos': [], 'total': 0}
-            grupos_cliente[cid]['pedidos'].append(p)
-            grupos_cliente[cid]['total'] += p.total
+            key = p.grupo_id if p.grupo_id else f'solo_{p.id}'
+            if key not in grupos_cliente:
+                grupos_cliente[key] = {'cliente': p.cliente, 'pedidos': [], 'total': 0, 'data_hora': p.data_hora}
+            grupos_cliente[key]['pedidos'].append(p)
+            grupos_cliente[key]['total'] += p.total
 
         return render_template('pedidos/lista.html',
                                usuario=current_user,

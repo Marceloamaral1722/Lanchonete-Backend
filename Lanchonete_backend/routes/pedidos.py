@@ -24,7 +24,7 @@ def listar():
         query = query.filter_by(status=status)
 
     pedidos = query.order_by(Pedido.criado_em.desc()).all()
-    return jsonify([p.to_dict() for p in pedidos])
+    return jsonify([p.to_dict(incluir_itens=True) for p in pedidos])
 
 
 @pedidos_bp.route('/<int:id>', methods=['GET'])

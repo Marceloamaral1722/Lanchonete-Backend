@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block titulo %}Meu Perfil - Maxismus Lanches{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+
+    <h4 class="mb-4 fw-bold"><i class="bi bi-person-circle"></i> Meu Perfil</h4>
+
+    {# Card: Dados pessoais #}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-pencil-square"></i> Dados Pessoais
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.perfil_dados') }}">
+          <div class="mb-3">
+            <label class="form-label">Nome completo</label>
+            <input type="text" name="nome" class="form-control"
+                   value="{{ usuario.nome }}" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Telefone</label>
+            <input type="tel" name="telefone" class="form-control"
+                   value="{{ usuario.telefone or '' }}"
+                   placeholder="(83) 99999-9999" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted">E-mail (não editável aqui)</label>
+            <input type="email" class="form-control bg-light" value="{{ usuario.email }}" disabled />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Salvar alterações
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# Card: Alterar e-mail #}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-envelope"></i> Alterar E-mail
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.perfil_email') }}">
+          <div class="mb-3">
+            <label class="form-label">Novo e-mail</label>
+            <input type="email" name="email" class="form-control"
+                   placeholder="novo@email.com" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirme sua senha atual</label>
+            <input type="password" name="senha" class="form-control"
+                   placeholder="Sua senha" required />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Atualizar e-mail
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# Card: Alterar senha #}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-lock"></i> Alterar Senha
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.perfil_senha') }}">
+          <div class="mb-3">
+            <label class="form-label">Senha atual</label>
+            <input type="password" name="senha_atual" class="form-control"
+                   placeholder="Senha atual" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova senha</label>
+            <input type="password" name="nova_senha" class="form-control"
+                   placeholder="Minimo 4 caracteres" minlength="4" required />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Alterar senha
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
